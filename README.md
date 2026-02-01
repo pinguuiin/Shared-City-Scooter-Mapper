@@ -133,6 +133,17 @@ PYTHONPATH=backend ./.venv/bin/python backend/main.py
 PYTHONPATH=backend ./.venv/bin/uvicorn main:app --reload --host 0.0.0.0 --port 8000 --app-dir backend
 ```
 
+**Terminal 4 - Web Server**
+```bash
+cd frontend
+
+# install dependencies
+npm install
+
+# start the server at http://localhost:5173/
+npm run dev
+```
+
 ### 4. Test the API
 
 ```bash
