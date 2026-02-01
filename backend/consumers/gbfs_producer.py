@@ -7,7 +7,7 @@ import requests
 from kafka import KafkaProducer
 from datetime import datetime
 from typing import Dict, List
-from app.config import settings
+from config import settings
 
 
 class GBFSProducer:
@@ -34,12 +34,25 @@ class GBFSProducer:
             # Extract bikes from GBFS format
             bikes = data.get("data", {}).get("bikes", [])
             
-            # Enrich with timestamp
+            # Filter bikes within geographic boundaries
             timestamp = datetime.utcnow().isoformat()
-            for bike in bikes:
-                bike["fetch_timestamp"] = timestamp
+            filtered_bikes = []
             
-            return bikes
+            for bike in bikes:
+                lat = bike.get('lat')
+                lon = bike.get('lon')
+                
+                # Check if within Aachen core area
+                if (lat and lon and 
+                    settings.MIN_LATITUDE <= lat <= settings.MAX_LATITUDE and
+                    settings.MIN_LONGITUDE <= lon <= settings.MAX_LONGITUDE):
+                    bike["fetch_timestamp"] = timestamp
+                    filtered_bikes.append(bike)
+            
+            if len(filtered_bikes) < len(bikes):
+                print(f"🔍 Filtered: {len(filtered_bikes)}/{len(bikes)} bikes within boundaries")
+            
+            return filtered_bikes
         
         except requests.exceptions.RequestException as e:
             print(f"❌ Error fetching GBFS data: {e}")

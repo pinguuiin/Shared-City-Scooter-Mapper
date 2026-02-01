@@ -4,9 +4,9 @@ Heatmap API endpoints
 from fastapi import APIRouter, Query, HTTPException
 from datetime import datetime
 from typing import Optional
-from app.services.duckdb_service import get_db_service
-from app.services.h3_service import h3_service
-from app.config import settings
+from services.duckdb_service import get_db_service
+from services.h3_service import h3_service
+from config import settings
 
 router = APIRouter(prefix="/api", tags=["heatmap"])
 
@@ -77,7 +77,11 @@ async def get_heatmap(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+        import traceback
+        error_detail = f"Internal server error: {str(e)}"
+        print(f"❌ API Error (resolution={resolution}):")
+        print(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=error_detail)
 
 
 @router.get("/heatmap/geojson")

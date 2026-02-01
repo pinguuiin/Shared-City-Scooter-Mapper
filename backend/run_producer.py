@@ -2,7 +2,7 @@
 Producer Runner Script
 Runs the GBFS producer that fetches bike data and publishes to Kafka
 """
-from app.consumers.gbfs_producer import GBFSProducer
+from consumers.gbfs_producer import GBFSProducer
 
 
 def main():

@@ -8,7 +8,7 @@ from contextlib import contextmanager
 from datetime import datetime, timedelta
 from typing import List, Dict, Iterator
 import threading
-from app.config import settings
+from config import settings
 
 
 class DuckDBService:
@@ -45,14 +45,19 @@ class DuckDBService:
         finally:
             conn.close()
 
-    def _run_with_retry(self, func, retries: int = 30, delay: float = 0.1):
+    def _run_with_retry(self, func, retries: int = 150, delay: float = 0.02):
+        """Retry with short fixed delay for faster response"""
         for attempt in range(retries):
             try:
                 return func()
             except duckdb.IOException as e:
                 if "Could not set lock" in str(e) and attempt < retries - 1:
-                    time.sleep(delay)  # Fixed small delay
+                    time.sleep(delay)  # Fast fixed delay (150 * 0.02 = 3s max)
                     continue
+                raise
+            except Exception as e:
+                # Log other exceptions but don't retry
+                print(f"⚠️  Database error (attempt {attempt + 1}/{retries}): {e}")
                 raise
     
     def initialize_db(self):
@@ -130,8 +135,49 @@ class DuckDBService:
 
             self._run_with_retry(_write)
     
+    def clear_aggregation(self, resolution: int):
+        """Clear all aggregation data for a specific resolution"""
+        with self._write_lock:
+            def _write():
+                with self._connection() as conn:
+                    table_name = f"agg_res{resolution}"
+                    conn.execute(f"DELETE FROM {table_name}")
+                    conn.commit()
+            
+            self._run_with_retry(_write)
+    
+    def insert_aggregation(self, resolution: int, aggregations: List[Dict]):
+        """Insert new aggregation data for a specific resolution (assumes table is already cleared)"""
+        if not aggregations:
+            return
+        
+        with self._write_lock:
+            def _write():
+                with self._connection() as conn:
+                    table_name = f"agg_res{resolution}"
+                    
+                    values = [
+                        (
+                            agg["h3_index"],
+                            agg["resolution"],
+                            agg["count"],
+                            agg.get("last_updated", datetime.utcnow()),
+                            agg.get("window_start"),
+                            agg.get("window_end")
+                        )
+                        for agg in aggregations
+                    ]
+                    
+                    conn.executemany(f"""
+                        INSERT INTO {table_name} 
+                        VALUES (?, ?, ?, ?, ?, ?)
+                    """, values)
+                    conn.commit()
+
+            self._run_with_retry(_write)
+    
     def upsert_aggregation(self, resolution: int, aggregations: List[Dict]):
-        """Upsert H3 aggregations for a specific resolution"""
+        """Upsert H3 aggregations for a specific resolution (legacy method)"""
         if not aggregations:
             return
         

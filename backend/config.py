@@ -18,15 +18,21 @@ class Settings(BaseSettings):
     KAFKA_CONSUMER_GROUP: str = "h3-aggregator"
     
     # GBFS
-    GBFS_URL: str = "https://gbfs.api.ridedott.com/public/v2/berlin/free_bike_status.json"
+    GBFS_URL: str = "https://gbfs.api.ridedott.com/public/v2/aachen/free_bike_status.json"
     GBFS_FETCH_INTERVAL: int = 60  # seconds
+    
+    # Geographic Boundaries (Aachen Core Metropolitan Area)
+    MIN_LATITUDE: float = 50.72
+    MAX_LATITUDE: float = 50.82
+    MIN_LONGITUDE: float = 6.03
+    MAX_LONGITUDE: float = 6.14
     
     # DuckDB
     DUCKDB_PATH: str = "data/mobility.duckdb"
     
     # H3 Configuration
-    H3_RESOLUTIONS: List[int] = [7, 6, 5, 4]  # From finest to coarsest
-    H3_DEFAULT_RESOLUTION: int = 6
+    H3_RESOLUTIONS: List[int] = [9, 8, 7, 6]  # From finest to coarsest
+    H3_DEFAULT_RESOLUTION: int = 8
     
     # Sliding Window
     WINDOW_SIZE_MINUTES: int = 5

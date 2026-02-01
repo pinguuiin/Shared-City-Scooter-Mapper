@@ -60,27 +60,26 @@ This project demonstrates a production-grade data pipeline that:
 ├── test_api.sh                 # Simple API test script
 ├── download_urls.txt           # GBFS URLs
 ├── .env.example                # Environment variables template
+├── data/
+│   └── mobility.duckdb         # DuckDB database
 ├── backend/
-│   ├── app/
-│   │   ├── api/                # FastAPI routes
-│   │   │   ├── heatmap.py      # Heatmap endpoints
-│   │   │   └── health.py       # Health check endpoints
-│   │   ├── consumers/          # Kafka consumers
-│   │   │   ├── gbfs_producer.py
-│   │   │   ├── gbfs_consumer.py
-│   │   │   └── aggregation_worker.py
-│   │   ├── services/           # Business logic
-│   │   │   ├── duckdb_service.py
-│   │   │   └── h3_service.py
-│   │   ├── models/
-│   │   │   └── schemas.py
-│   │   ├── config.py
-│   │   ├── main.py
-│   │   ├── run_producer.py
-│   │   └── run_consumer.py
-│   └── data/
-│       └── mobility.duckdb
-└── frontend/                    # optional separate frontend repo
+│   ├── api/                    # FastAPI routes
+│   │   ├── heatmap.py          # Heatmap endpoints
+│   │   └── health.py           # Health check endpoints
+│   ├── consumers/              # Kafka consumers
+│   │   ├── gbfs_producer.py
+│   │   ├── gbfs_consumer.py
+│   │   └── aggregation_worker.py
+│   ├── services/               # Business logic
+│   │   ├── duckdb_service.py
+│   │   └── h3_service.py
+│   ├── models/
+│   │   └── schemas.py
+│   ├── config.py
+│   ├── main.py
+│   ├── run_producer.py
+│   └── run_consumer.py
+└── frontend/                   # optional separate frontend repo
 ```
 
 ## 🚀 Quick Start
@@ -117,17 +116,17 @@ Access Redpanda Console: http://localhost:8080
 
 **Terminal 1 - Producer** (Fetches GBFS data → Kafka):
 ```bash
-PYTHONPATH=backend python backend/app/run_producer.py
+PYTHONPATH=backend python backend/run_producer.py
 ```
 
 **Terminal 2 - Consumer** (Kafka → H3 Aggregation → DuckDB):
 ```bash
-PYTHONPATH=backend python backend/app/run_consumer.py
+PYTHONPATH=backend python backend/run_consumer.py
 ```
 
 **Terminal 3 - API Server**:
 ```bash
-PYTHONPATH=backend python backend/app/main.py
+PYTHONPATH=backend python backend/main.py
 # Or with uvicorn:
 PYTHONPATH=backend uvicorn backend.app.main:app --reload --host 0.0.0.0 --port 8000
 ```
@@ -156,7 +155,7 @@ Edit `.env` to customize:
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `GBFS_URL` | GBFS feed endpoint | Berlin Dott scooters |
+| `GBFS_URL` | GBFS feed endpoint | Aachen Dott scooters |
 | `GBFS_FETCH_INTERVAL` | Fetch interval (seconds) | 60 |
 | `H3_RESOLUTIONS` | H3 resolution levels | [7, 6, 5, 4] |
 | `KAFKA_BOOTSTRAP_SERVERS` | Kafka broker address | localhost:9092 |
@@ -288,7 +287,7 @@ pytest tests/
 ## 📝 Data Sources
 
 This project uses GBFS (General Bikeshare Feed Specification) data:
-- **Default**: Dott Scooters Berlin
+- **Default**: Dott Scooters Aachen
 - **Format**: https://gbfs.org/
 - **Other cities**: https://github.com/MobilityData/gbfs
 

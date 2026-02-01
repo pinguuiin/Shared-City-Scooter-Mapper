@@ -4,7 +4,7 @@ Kafka Consumer for GBFS data - reads raw bike locations
 import json
 from kafka import KafkaConsumer
 from typing import Dict, List, Callable
-from app.config import settings
+from config import settings
 
 
 class GBFSConsumer:

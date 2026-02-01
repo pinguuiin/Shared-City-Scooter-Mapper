@@ -3,8 +3,8 @@ Health check endpoints
 """
 from fastapi import APIRouter
 from datetime import datetime
-from app.services.duckdb_service import get_db_service
-from app.config import settings
+from services.duckdb_service import get_db_service
+from config import settings
 
 router = APIRouter(prefix="/api", tags=["health"])
 

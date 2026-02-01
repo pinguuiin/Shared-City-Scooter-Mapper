@@ -4,9 +4,9 @@ Real-Time Shared Mobility Heatmap - FastAPI Application
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
-from app.config import settings
-from app.api import heatmap_router, health_router
-from app.services.duckdb_service import get_db_service
+from config import settings
+from api import heatmap_router, health_router
+from services.duckdb_service import get_db_service
 
 
 @asynccontextmanager

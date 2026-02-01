@@ -2,8 +2,8 @@
 Consumer Runner Script
 Runs the aggregation worker that consumes GBFS data and creates H3 aggregations
 """
-from app.consumers.gbfs_consumer import BatchGBFSConsumer
-from app.consumers.aggregation_worker import aggregation_worker
+from consumers.gbfs_consumer import BatchGBFSConsumer
+from consumers.aggregation_worker import aggregation_worker
 
 
 def main():
@@ -13,9 +13,10 @@ def main():
     print("=" * 60)
     
     # Create batch consumer with aggregation worker
+    # Batch size set to 1000 for Aachen (~598 scooters)
     consumer = BatchGBFSConsumer(
         batch_handler=aggregation_worker.get_batch_handler(),
-        batch_size=100,
+        batch_size=1000,
         batch_timeout_ms=5000
     )
     

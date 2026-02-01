@@ -4,7 +4,7 @@ H3 service for spatial indexing and multi-resolution aggregation
 import h3
 from typing import List, Dict, Tuple
 from collections import defaultdict
-from app.config import settings
+from config import settings
 
 
 class H3Service:
