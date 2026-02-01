@@ -1,5 +1,7 @@
 # 🗺️ Real-Time Shared Mobility Heatmap
 
+A brief note on AI assistance: This project was developed by the author with assistance from AI agents as a learning exercise to explore Kafka-based stream processing, web development, and deploying FastAPI services. The author retains full responsibility for the design, implementation, and final code.
+
 A real-time vehicle density visualization system using H3 spatial indexing, streaming data processing, and multi-resolution aggregation.
 
 ## 🎯 Project Overview
@@ -116,19 +118,19 @@ Access Redpanda Console: http://localhost:8080
 
 **Terminal 1 - Producer** (Fetches GBFS data → Kafka):
 ```bash
-PYTHONPATH=backend python backend/run_producer.py
+PYTHONPATH=backend ./.venv/bin/python backend/run_producer.py
 ```
 
 **Terminal 2 - Consumer** (Kafka → H3 Aggregation → DuckDB):
 ```bash
-PYTHONPATH=backend python backend/run_consumer.py
+PYTHONPATH=backend ./.venv/bin/python backend/run_consumer.py
 ```
 
 **Terminal 3 - API Server**:
 ```bash
-PYTHONPATH=backend python backend/main.py
+PYTHONPATH=backend ./.venv/bin/python backend/main.py
 # Or with uvicorn:
-PYTHONPATH=backend uvicorn backend.app.main:app --reload --host 0.0.0.0 --port 8000
+PYTHONPATH=backend ./.venv/bin/uvicorn main:app --reload --host 0.0.0.0 --port 8000 --app-dir backend
 ```
 
 ### 4. Test the API
@@ -157,8 +159,8 @@ Edit `.env` to customize:
 |----------|-------------|---------|
 | `GBFS_URL` | GBFS feed endpoint | Aachen Dott scooters |
 | `GBFS_FETCH_INTERVAL` | Fetch interval (seconds) | 60 |
-| `H3_RESOLUTIONS` | H3 resolution levels | [7, 6, 5, 4] |
-| `KAFKA_BOOTSTRAP_SERVERS` | Kafka broker address | localhost:9092 |
+| `H3_RESOLUTIONS` | H3 resolution levels | [9, 8, 7, 6] |
+| `KAFKA_BOOTSTRAP_SERVERS` | Kafka broker address | localhost:19092 |
 | `DUCKDB_PATH` | DuckDB file path | data/mobility.duckdb |
 | `WINDOW_SIZE_MINUTES` | Aggregation window | 5 |
 | `RETENTION_MINUTES` | Data retention period | 60 |
@@ -167,10 +169,10 @@ Edit `.env` to customize:
 
 | Resolution | Avg Hexagon Edge | Use Case |
 |------------|------------------|----------|
-| 4 | ~22 km | City-level view |
-| 5 | ~8 km | District-level |
-| 6 | ~3 km | Neighborhood |
-| 7 | ~1 km | Street-level detail |
+| 6 | ~3 km | District |
+| 7 | ~1 km | Neighborhood |
+| 8 | ~461 m | Street-level |
+| 9 | ~174 m | Block-level detail |
 
 ## 📊 API Endpoints
 
@@ -179,7 +181,7 @@ Edit `.env` to customize:
 Get aggregated vehicle counts per hexagon.
 
 **Query Parameters:**
-- `resolution` (int): H3 resolution (4-7, default: 6)
+- `resolution` (int): H3 resolution (6-9, default: 8)
 - `min_count` (int): Minimum vehicles per hexagon (default: 1)
 
 **Response:**
@@ -216,7 +218,7 @@ Health check for all services.
 ## 🔍 Key Features
 
 ### 1. **Multi-Resolution Aggregation**
-- Automatically aggregates data at resolutions 4, 5, 6, and 7
+- Automatically aggregates data at resolutions 6, 7, 8, and 9
 - Parent-child hexagon relationships for zoom levels
 - Query any resolution without re-computation
 
@@ -226,7 +228,7 @@ Health check for all services.
 - Real-time updates every 60 seconds
 
 ### 3. **Performance Optimizations**
-- Batch processing (100 messages/batch)
+- Batch processing (1000 messages/batch)
 - DuckDB for fast analytical queries
 - Thread-safe database operations
 - Efficient H3 spatial indexing
@@ -275,12 +277,12 @@ pytest tests/
 
 ## 🔜 Future Enhancements
 
-- [ ] Sliding window aggregation (currently truncate+insert)
+- [ ] Real-time alarm system for scooter shortage
+- [ ] Landscape-based aggregation
 - [ ] Redis caching layer
 - [ ] WebSocket support for real-time updates
 - [ ] Historical data analysis
 - [ ] Multiple GBFS feed support
-- [ ] Demand prediction model
 - [ ] Dockerization of Python services
 - [ ] Kubernetes deployment
 
@@ -291,25 +293,13 @@ This project uses GBFS (General Bikeshare Feed Specification) data:
 - **Format**: https://gbfs.org/
 - **Other cities**: https://github.com/MobilityData/gbfs
 
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests
-5. Submit a pull request
-
-## 📄 License
-
-MIT License - feel free to use this for your portfolio!
-
 ## 🙏 Acknowledgments
 
+- **GBFS**: Mobility Data collaborative
 - **H3**: Uber's Hexagonal Hierarchical Spatial Index
 - **Redpanda**: Kafka-compatible streaming platform
 - **DuckDB**: Embedded analytical database
 - **FastAPI**: Modern Python web framework
-- **GBFS**: Mobility Data collaborative
 
 ---
 
