@@ -1,0 +1,29 @@
+# Real-Time Shared Mobility Heatmap - Backend Dependencies
+
+# Web Framework
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+pydantic==2.5.3
+pydantic-settings==2.1.0
+
+# Data Processing
+duckdb==0.10.0
+h3==3.7.6
+
+# Streaming
+kafka-python==2.0.2
+
+# HTTP Client
+requests==2.31.0
+httpx==0.26.0
+
+# Python Standard Library Extensions
+python-dotenv==1.0.0
+
+# Optional: For better performance
+orjson==3.9.12
+
+# Development
+pytest==7.4.4
+pytest-asyncio==0.23.3
+black==24.1.1

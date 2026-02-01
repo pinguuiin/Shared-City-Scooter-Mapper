@@ -1,0 +1,51 @@
+version: "3.8"
+
+services:
+  redpanda:
+    image: redpandadata/redpanda:latest
+    container_name: scootermap-redpanda
+    command:
+      - redpanda
+      - start
+      - --overprovisioned
+      - --smp 1
+      - --memory 1G
+      - --reserve-memory 0M
+      - --node-id 0
+      - --check=false
+      - --kafka-addr internal://0.0.0.0:9092,external://0.0.0.0:19092
+      - --advertise-kafka-addr internal://redpanda:9092,external://localhost:19092
+    ports:
+      - "19092:19092"  # Kafka API (external)
+      - "9092:9092"    # Kafka API (internal)
+      - "9644:9644"    # Admin API
+      - "8082:8082"    # HTTP Proxy
+    volumes:
+      - redpanda-data:/var/lib/redpanda/data
+    networks:
+      - scootermap-network
+    healthcheck:
+      test: ["CMD", "rpk", "cluster", "health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  console:
+    image: redpandadata/console:latest
+    container_name: scootermap-console
+    depends_on:
+      - redpanda
+    ports:
+      - "8080:8080"
+    environment:
+      KAFKA_BROKERS: redpanda:9092
+    networks:
+      - scootermap-network
+
+volumes:
+  redpanda-data:
+
+networks:
+  scootermap-network:
+    driver: bridge
+
