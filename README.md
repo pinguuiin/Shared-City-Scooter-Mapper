@@ -1,6 +1,8 @@
 # 🗺️ Real-Time Shared Mobility Heatmap
 
-A brief note on AI assistance: This project was developed by the author with assistance from AI agents as a learning exercise to explore Kafka-based stream processing, web development, and deploying FastAPI services. The author retains full responsibility for the design, implementation, and final code.
+<img width="1273" height="571" alt="Screenshot 2026-02-02 090105" src="https://github.com/user-attachments/assets/f6defd71-f3d5-4edf-86f0-1ebef69f1e71" />
+
+<br>A brief note on AI assistance: This project was developed by the author with assistance from AI agents as a learning exercise to explore Kafka-based stream processing, web development, and deploying FastAPI services. The author retains full responsibility for the design, implementation, and final code.
 
 A real-time vehicle density visualization system using H3 spatial indexing, streaming data processing, and multi-resolution aggregation.
 
