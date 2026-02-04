@@ -252,11 +252,11 @@ Health check for all services.
 - Efficient H3 spatial indexing
 
 ### 4. **Real-Time Alert System**
-- **Configurable threshold slider**: Set alerts for hexagons with low scooter availability (0-10)
-- **Visual highlighting**: Red-bordered hexagons with count ≤ threshold for immediate visibility
-- **Live alert log**: Bottom-right panel showing low-availability warnings with H3 index, count, and timestamp
-- **Smart filtering**: Only tracks hexagons in active service areas (excludes perpetual empty outskirts)
-- **Auto-refresh**: Alert log updates with map data every 30 seconds, clears on resolution change
+- Live alert log on the bottom-right panel
+- Configurable alert threshold slider
+- Visual highlighting underserved areas on the map
+- Only tracking hexagons in active service areas
+- Alert log auto-updates with map data every 30 seconds
 
 ### 5. **Production-Ready**
 - Health checks and monitoring
