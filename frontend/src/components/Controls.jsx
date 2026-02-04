@@ -1,8 +1,8 @@
 function Controls({ 
   resolution, 
   setResolution, 
-  minCount, 
-  setMinCount,
+  alertThreshold,
+  setAlertThreshold,
   autoRefresh,
   setAutoRefresh,
   onRefresh,
@@ -42,22 +42,25 @@ function Controls({
         </div>
       </div>
 
-      {/* Min Count Filter */}
+      {/* Alert Threshold */}
       <div className="mb-4">
         <label className="block text-sm font-medium mb-2">
-          Min Vehicle Count: {minCount}
+          Alert Threshold: {alertThreshold}
         </label>
         <input
           type="range"
-          min="1"
+          min="0"
           max="10"
-          value={minCount}
-          onChange={(e) => setMinCount(parseInt(e.target.value))}
+          value={alertThreshold}
+          onChange={(e) => setAlertThreshold(parseInt(e.target.value))}
           className="w-full"
         />
         <div className="flex justify-between text-xs text-gray-400 mt-1">
-          <span>1</span>
+          <span>0</span>
           <span>10</span>
+        </div>
+        <div className="text-xs text-gray-400 mt-1">
+          Warns when hexagon count ≤ threshold
         </div>
       </div>
 

@@ -10,7 +10,7 @@ function Stats({ data, error }) {
   }
 
   return (
-    <div className="absolute bottom-4 right-4 bg-gray-800 text-white p-4 rounded-lg shadow-lg z-10 min-w-[200px]">
+    <div className="absolute top-4 right-4 bg-gray-800 text-white p-4 rounded-lg shadow-lg z-10 min-w-[200px]">
       <h3 className="text-sm font-bold mb-2 text-gray-300">Statistics</h3>
       
       <div className="space-y-2 text-sm">
@@ -45,7 +45,7 @@ function Stats({ data, error }) {
           }}></div>
         </div>
         <div className="flex justify-between text-xs text-gray-400 mt-1">
-          <span>Low</span>
+          <span>0 (Low)</span>
           <span>High</span>
         </div>
       </div>

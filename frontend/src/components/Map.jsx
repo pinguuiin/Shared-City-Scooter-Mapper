@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import DeckGL from '@deck.gl/react'
 import { Map as MapGL } from 'react-map-gl'
 import { GeoJsonLayer } from '@deck.gl/layers'
@@ -25,7 +25,7 @@ function getColorForCount(count, maxCount) {
   return COLOR_SCALE[index]
 }
 
-function Map({ data, resolution, isLoading }) {
+function Map({ data, resolution, isLoading, alertThreshold, onAlertsUpdate }) {
   const [viewState, setViewState] = useState({
     longitude: 6.0839,
     latitude: 50.7753,
@@ -40,6 +40,34 @@ function Map({ data, resolution, isLoading }) {
     return Math.max(...data.features.map(f => f.properties.count), 1)
   }, [data])
 
+  // Identify low-count hexagons for alerts
+  const lowCountHexagons = useMemo(() => {
+    if (!data || !data.features) return new Set()
+    return new Set(
+      data.features
+        .filter(f => f.properties.count <= alertThreshold)
+        .map(f => f.properties.h3_index)
+    )
+  }, [data, alertThreshold])
+
+  // Generate alerts and notify parent
+  useEffect(() => {
+    if (!data || !data.features) {
+      onAlertsUpdate([])
+      return
+    }
+
+    const alerts = data.features
+      .filter(f => f.properties.count <= alertThreshold)
+      .map(f => ({
+        h3_index: f.properties.h3_index,
+        count: f.properties.count,
+        timestamp: f.properties.last_updated || new Date().toISOString()
+      }))
+
+    onAlertsUpdate(alerts)
+  }, [data, alertThreshold, onAlertsUpdate])
+
   // Create deck.gl layer
   const layers = useMemo(() => {
     if (!data || !data.features) return []
@@ -53,15 +81,37 @@ function Map({ data, resolution, isLoading }) {
         filled: true,
         extruded: false,
         lineWidthMinPixels: 1,
-        getFillColor: f => getColorForCount(f.properties.count, maxCount),
-        getLineColor: [255, 255, 255, 100],
-        getLineWidth: 1,
+        getFillColor: f => {
+          const baseColor = getColorForCount(f.properties.count, maxCount)
+          // Add red tint to alerted hexagons
+          if (lowCountHexagons.has(f.properties.h3_index)) {
+            return [
+              Math.min(baseColor[0] + 50, 255),
+              Math.max(baseColor[1] - 30, 0),
+              Math.max(baseColor[2] - 30, 0),
+              Math.min(baseColor[3] + 40, 255)
+            ]
+          }
+          return baseColor
+        },
+        getLineColor: f => {
+          // Bright neon red borders for alerted hexagons
+          return lowCountHexagons.has(f.properties.h3_index)
+            ? [255, 20, 60, 255]  // Vivid neon red, fully opaque
+            : [255, 255, 255, 30]  // Subtle white for normal
+        },
+        getLineWidth: f => {
+          // Much thicker borders for alerted hexagons
+          return lowCountHexagons.has(f.properties.h3_index) ? 3 : 1
+        },
         updateTriggers: {
-          getFillColor: [maxCount]
+          getFillColor: [maxCount, lowCountHexagons],
+          getLineColor: [lowCountHexagons],
+          getLineWidth: [lowCountHexagons]
         }
       })
     ]
-  }, [data, maxCount])
+  }, [data, maxCount, lowCountHexagons])
 
   const getTooltip = ({ object }) => {
     if (!object) return null

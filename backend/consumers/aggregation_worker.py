@@ -15,6 +15,7 @@ class AggregationWorker:
         self.h3_service = h3_service
         self.db_service = get_db_service()
         self.resolutions = settings.H3_RESOLUTIONS
+        self.previous_active_hexagons = {}  # Track hexagons that had scooters in previous snapshot
         print(f"✅ Aggregation Worker initialized (resolutions: {self.resolutions})")
     
     def process_single_message(self, bike_data: Dict):
@@ -116,27 +117,51 @@ class AggregationWorker:
             valid_bikes_for_agg = [{"lat": bike["lat"], "lon": bike["lon"]} for bike in unique_bikes_by_id.values()]
             aggregations = self.h3_service.aggregate_multi_resolution(valid_bikes_for_agg)
             
-            # 4. Clear and store aggregations for each resolution (snapshot mode)
-            # This ensures each resolution shows the CURRENT state, not accumulated history
-            for resolution, hexagon_counts in aggregations.items():
-                # Clear all old data for this resolution
-                self.db_service.clear_aggregation(resolution)
+            # 4. Generate all hexagons in bounds and populate with counts
+            # This ensures we show hexagons with count=0
+            for resolution in self.resolutions:
+                # Get all hexagons covering the geographic bounds
+                all_hexes_in_bounds = self.h3_service.get_hexagons_in_bounds(
+                    settings.MIN_LATITUDE,
+                    settings.MAX_LATITUDE,
+                    settings.MIN_LONGITUDE,
+                    settings.MAX_LONGITUDE,
+                    resolution
+                )
                 
-                # Insert new snapshot
+                # Get actual counts (from aggregation, or 0 if not present)
+                hexagon_counts = aggregations.get(resolution, {})
+                
+                # Track active hexagons (count > 0) for next iteration
+                current_active = set(h3_idx for h3_idx, count in hexagon_counts.items() if count > 0)
+                previous_active = self.previous_active_hexagons.get(resolution, set())
+                
+                # Service area = hexagons that currently have scooters OR previously had scooters
+                service_area = current_active | previous_active
+                
+                # Build records only for service area hexagons (not empty outskirts)
                 agg_records = [
                     {
                         "h3_index": h3_index,
                         "resolution": resolution,
-                        "count": count,
+                        "count": hexagon_counts.get(h3_index, 0),
                         "last_updated": timestamp,
                         "window_start": timestamp,
                         "window_end": timestamp,
                     }
-                    for h3_index, count in hexagon_counts.items()
+                    for h3_index in service_area
                 ]
                 
+                # Clear and insert snapshot
+                self.db_service.clear_aggregation(resolution)
                 self.db_service.insert_aggregation(resolution, agg_records)
-                print(f"✅ Resolution {resolution}: {len(hexagon_counts)} hexagons, {sum(hexagon_counts.values())} vehicles")
+                
+                # Update previous active hexagons for next cycle
+                self.previous_active_hexagons[resolution] = current_active
+                
+                total_vehicles = sum(rec["count"] for rec in agg_records)
+                hexes_with_vehicles = sum(1 for rec in agg_records if rec["count"] > 0)
+                print(f"✅ Resolution {resolution}: {len(agg_records)} service area hexagons ({hexes_with_vehicles} with vehicles), {total_vehicles} vehicles")
             
             # 5. Cleanup old data periodically
             self.db_service.cleanup_old_data()

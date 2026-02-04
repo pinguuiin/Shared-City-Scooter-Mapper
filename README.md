@@ -2,18 +2,18 @@
 
 <img width="1273" height="571" alt="Screenshot 2026-02-02 090105" src="https://github.com/user-attachments/assets/f6defd71-f3d5-4edf-86f0-1ebef69f1e71" />
 
-<br>A brief note on AI assistance: This project was developed by the author with assistance from AI agents as a learning exercise to explore Kafka-based stream processing, web development, and deploying FastAPI services. The author retains full responsibility for the design, implementation, and final code.
+<br>A brief note on AI assistance: This project was developed by the author with assistance from AI agents as a learning exercise to explore stream processing, web development, and deploying FastAPI services. The author retains full responsibility for the design, implementation, and final code.
 
-A real-time vehicle density visualization system using H3 spatial indexing, streaming data processing, and multi-resolution aggregation.
+A real-time scooter availability heatmap server combining Kafka-based streaming architecture patterns, batch processed messages, H3 multi-resolution aggregation with embedded DuckDB analytics, a FastAPI backend, and an interactive map frontend with live alert log for urban mobility monitoring and operational insights.
 
 ## 🎯 Project Overview
 
-This project demonstrates a production-grade data pipeline that:
-- **Ingests** real-time bike/scooter location data from GBFS feeds
-- **Processes** locations using Uber's H3 hexagonal spatial indexing
-- **Aggregates** vehicle density across multiple resolution levels
-- **Serves** heatmap data via FastAPI with sub-second query times
-- **Visualizes** density patterns with deck.gl (frontend separate)
+This project demonstrates an ETL data pipeline that:
+- **Ingests** scooter location data from GBFS feeds every 60 seconds
+- **Processes** geographic coordinates using Uber's H3 hexagonal spatial indexing
+- **Aggregates** vehicle density across multiple resolution levels (resolutions 6-9, representing ~3km to ~174m)
+- **Serves** heatmap data via FastAPI with 50-200ms query latency
+- **Visualizes** density patterns with live alerm system through a React frontend using deck.gl and MapLibre GL
 
 ## 🏗️ Architecture
 
@@ -67,17 +67,21 @@ This project demonstrates a production-grade data pipeline that:
 ├── data/
 │   └── mobility.duckdb         # DuckDB database
 ├── backend/
-│   ├── api/                    # FastAPI routes
+│   ├── api/
+│   │   ├── __init__.py
 │   │   ├── heatmap.py          # Heatmap endpoints
 │   │   └── health.py           # Health check endpoints
-│   ├── consumers/              # Kafka consumers
+│   ├── consumers/
+│   │   ├── __init__.py
 │   │   ├── gbfs_producer.py
 │   │   ├── gbfs_consumer.py
 │   │   └── aggregation_worker.py
-│   ├── services/               # Business logic
+│   ├── services/
+│   │   ├── __init__.py
 │   │   ├── duckdb_service.py
 │   │   └── h3_service.py
 │   ├── models/
+│   │   ├── __init__.py
 │   │   └── schemas.py
 │   ├── config.py
 │   ├── main.py
@@ -142,9 +146,10 @@ cd frontend
 # install dependencies
 npm install
 
-# start the server at http://localhost:5173/
+# start the server
 npm run dev
 ```
+The server is available at `http://localhost:5173`
 
 ### 4. Test the API
 
@@ -246,7 +251,14 @@ Health check for all services.
 - Thread-safe database operations
 - Efficient H3 spatial indexing
 
-### 4. **Production-Ready**
+### 4. **Real-Time Alert System**
+- **Configurable threshold slider**: Set alerts for hexagons with low scooter availability (0-10)
+- **Visual highlighting**: Red-bordered hexagons with count ≤ threshold for immediate visibility
+- **Live alert log**: Bottom-right panel showing low-availability warnings with H3 index, count, and timestamp
+- **Smart filtering**: Only tracks hexagons in active service areas (excludes perpetual empty outskirts)
+- **Auto-refresh**: Alert log updates with map data every 30 seconds, clears on resolution change
+
+### 5. **Production-Ready**
 - Health checks and monitoring
 - CORS support for frontend
 - Comprehensive error handling
@@ -290,14 +302,14 @@ pytest tests/
 
 ## 🔜 Future Enhancements
 
-- [ ] Real-time alarm system for scooter shortage
+- [✅] Real-time alarm system for scooter shortage
 - [ ] Landscape-based aggregation
 - [ ] Redis caching layer
 - [ ] WebSocket support for real-time updates
 - [ ] Historical data analysis
 - [ ] Multiple GBFS feed support
 - [ ] Dockerization of Python services
-- [ ] Kubernetes deployment
+- [ ] Cloud deployment
 
 ## 📝 Data Sources
 

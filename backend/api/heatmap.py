@@ -19,7 +19,7 @@ async def get_heatmap(
         le=max(settings.H3_RESOLUTIONS),
         description="H3 resolution level"
     ),
-    min_count: int = Query(default=1, ge=1, description="Minimum vehicle count per hexagon")
+    min_count: int = Query(default=1, ge=0, description="Minimum vehicle count per hexagon")
 ):
     """
     Get heatmap data for a specific H3 resolution
@@ -92,7 +92,7 @@ async def get_heatmap_geojson(
         le=max(settings.H3_RESOLUTIONS),
         description="H3 resolution level"
     ),
-    min_count: int = Query(default=1, ge=1, description="Minimum vehicle count per hexagon")
+    min_count: int = Query(default=1, ge=0, description="Minimum vehicle count per hexagon")
 ):
     """
     Get heatmap data as GeoJSON FeatureCollection

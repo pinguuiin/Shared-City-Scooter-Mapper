@@ -199,6 +199,56 @@ class H3Service:
             return H3Service._is_valid_cell(h3_index)
         except:
             return False
+    
+    @staticmethod
+    def get_hexagons_in_bounds(min_lat: float, max_lat: float, min_lon: float, max_lon: float, resolution: int) -> List[str]:
+        """
+        Get all H3 hexagons that cover a bounding box
+        
+        Args:
+            min_lat: Minimum latitude
+            max_lat: Maximum latitude
+            min_lon: Minimum longitude
+            max_lon: Maximum longitude
+            resolution: H3 resolution
+        
+        Returns:
+            List of H3 hexagon IDs covering the bounding box
+        """
+        # Create a polygon from bounding box
+        polygon = {
+            "type": "Polygon",
+            "coordinates": [[
+                [min_lon, min_lat],
+                [min_lon, max_lat],
+                [max_lon, max_lat],
+                [max_lon, min_lat],
+                [min_lon, min_lat]
+            ]]
+        }
+        
+        # Use polyfill to get all hexagons
+        if hasattr(h3, "polyfill_geojson"):
+            hexagons = h3.polyfill_geojson(polygon, resolution)
+        elif hasattr(h3, "polyfill"):
+            # Convert to old format
+            coords = polygon["coordinates"][0]
+            geo_json = {
+                "type": "Polygon",
+                "coordinates": [coords]
+            }
+            hexagons = h3.polyfill(geo_json, resolution, geo_json_conformant=True)
+        else:
+            # Fallback: sample points and deduplicate hexagons
+            hexagons = set()
+            lat_step = (max_lat - min_lat) / 20
+            lon_step = (max_lon - min_lon) / 20
+            for lat in [min_lat + i * lat_step for i in range(21)]:
+                for lon in [min_lon + j * lon_step for j in range(21)]:
+                    hex_id = H3Service._latlng_to_cell(lat, lon, resolution)
+                    hexagons.add(hex_id)
+        
+        return list(hexagons)
 
 
 # Singleton instance
