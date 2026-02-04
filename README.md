@@ -1,6 +1,6 @@
 # 🗺️ Real-Time Shared Mobility Heatmap
 
-<img width="1273" height="571" alt="Screenshot 2026-02-02 090105" src="https://github.com/user-attachments/assets/f6defd71-f3d5-4edf-86f0-1ebef69f1e71" />
+![alertmap](https://github.com/user-attachments/assets/331085a5-ebd9-4de9-815c-b52728b422c5)
 
 <br>A brief note on AI assistance: This project was developed by the author with assistance from AI agents as a learning exercise to explore stream processing, web development, and deploying FastAPI services. The author retains full responsibility for the design, implementation, and final code.
 
