@@ -50,7 +50,7 @@ This project demonstrates an ETL data pipeline that:
        │
        ↓ (HTTP)
 ┌─────────────┐
-│  Frontend   │ (Deck.gl - separate repo)
+│  Frontend   │ (React + Deck.gl + Nginx)
 └─────────────┘
 ```
 
@@ -58,100 +58,100 @@ This project demonstrates an ETL data pipeline that:
 
 ```
 .
-├── docker-compose.yml          # Redpanda setup (repo root)
-├── requirements.txt            # Python dependencies (repo root)
+├── docker-compose.yml          # Multi-service orchestration
+├── .env.example                # Environment variables template
 ├── setup.sh                    # Setup helper
 ├── test_api.sh                 # Simple API test script
 ├── download_urls.txt           # GBFS URLs
-├── .env.example                # Environment variables template
 ├── data/
-│   └── mobility.duckdb         # DuckDB database
+│   └── mobility.duckdb         # DuckDB database (shared volume)
 ├── backend/
+│   ├── Dockerfile              # Backend container image
+│   ├── .dockerignore           # Docker build exclusions
+│   ├── requirements.txt        # Python dependencies
+│   ├── config.py               # Configuration management
+│   ├── main.py                 # FastAPI application
+│   ├── run_producer.py         # Producer entry point
+│   ├── run_consumer.py         # Consumer entry point
 │   ├── api/
 │   │   ├── __init__.py
 │   │   ├── heatmap.py          # Heatmap endpoints
 │   │   └── health.py           # Health check endpoints
 │   ├── consumers/
 │   │   ├── __init__.py
-│   │   ├── gbfs_producer.py
-│   │   ├── gbfs_consumer.py
-│   │   └── aggregation_worker.py
+│   │   ├── gbfs_producer.py    # GBFS data fetcher
+│   │   ├── gbfs_consumer.py    # Kafka consumer
+│   │   └── aggregation_worker.py # H3 aggregation logic
 │   ├── services/
 │   │   ├── __init__.py
-│   │   ├── duckdb_service.py
-│   │   └── h3_service.py
-│   ├── models/
-│   │   ├── __init__.py
-│   │   └── schemas.py
-│   ├── config.py
-│   ├── main.py
-│   ├── run_producer.py
-│   └── run_consumer.py
-└── frontend/                   # optional separate frontend repo
+│   │   ├── duckdb_service.py   # Database service
+│   │   └── h3_service.py       # H3 spatial indexing
+│   └── models/
+│       ├── __init__.py
+│       └── schemas.py          # Pydantic models
+└── frontend/
+    ├── Dockerfile              # Frontend container image
+    ├── .dockerignore           # Docker build exclusions
+    ├── nginx.conf              # Nginx configuration
+    ├── package.json            # Node dependencies
+    ├── vite.config.js          # Vite configuration
+    └── src/
+        ├── App.jsx             # Main React component
+        ├── components/         # React components
+        └── services/           # API client
 ```
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 
-- **Python** ≥ 3.10
 - **Docker** & **Docker Compose**
-- **Git**
+  - [Docker Desktop](https://www.docker.com/products/docker-desktop/) (Windows/macOS) 
+  - [Docker Engine](https://docs.docker.com/engine/install/) (Linux)
+- **jq** (for running test script)
+  - Linux: `sudo apt-get install jq`
+  - macOS: `brew install jq`
+  - Windows (WSL): `sudo apt-get install jq`
 
-### 1. Clone and Setup
+### Running with Docker
 
-```bash
-cp .env.example .env
-python -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-```
-
-### 2. Start Redpanda
-
+**Start all services:**
 ```bash
 docker compose up -d
 ```
 
-Verify Redpanda is running:
+**Access the application:**
+- **Frontend:** http://localhost:3000
+- **API Documentation:** http://localhost:8000/docs
+- **Redpanda Console:** http://localhost:8080
+
+**View logs:**
 ```bash
-docker exec -it scootermap-redpanda rpk cluster info
+# All services
+docker-compose logs -f
+
+# Specific service
+docker-compose logs -f backend
+docker-compose logs -f producer
+docker-compose logs -f consumer
 ```
 
-Access Redpanda Console: http://localhost:8080
-
-### 3. Run the Pipeline
-
-**Terminal 1 - Producer** (Fetches GBFS data → Kafka):
+**Stop all services:**
 ```bash
-PYTHONPATH=backend ./.venv/bin/python backend/run_producer.py
+docker-compose down
 ```
 
-**Terminal 2 - Consumer** (Kafka → H3 Aggregation → DuckDB):
-```bash
-PYTHONPATH=backend ./.venv/bin/python backend/run_consumer.py
-```
+**Services included:**
+| Service | Description | Port |
+|---------|-------------|------|
+| frontend | React app with nginx | 3000 |
+| backend | FastAPI REST API | 8000 |
+| producer | GBFS data fetcher | - |
+| consumer | Data aggregation worker | - |
+| redpanda | Kafka-compatible broker | 19092 |
+| console | Redpanda web UI | 8080 |
 
-**Terminal 3 - API Server**:
-```bash
-PYTHONPATH=backend ./.venv/bin/python backend/main.py
-# Or with uvicorn:
-PYTHONPATH=backend ./.venv/bin/uvicorn main:app --reload --host 0.0.0.0 --port 8000 --app-dir backend
-```
-
-**Terminal 4 - Web Server**
-```bash
-cd frontend
-
-# install dependencies
-npm install
-
-# start the server
-npm run dev
-```
-The server is available at `http://localhost:5173`
-
-### 4. Test the API
+### Test the API
 
 ```bash
 # Health check
@@ -167,8 +167,6 @@ curl http://localhost:8000/api/heatmap/geojson?resolution=6
 curl http://localhost:8000/api/stats
 ```
 
-API Documentation: http://localhost:8000/docs
-
 ## 🔧 Configuration
 
 Edit `.env` to customize:
@@ -178,7 +176,7 @@ Edit `.env` to customize:
 | `GBFS_URL` | GBFS feed endpoint | Aachen Dott scooters |
 | `GBFS_FETCH_INTERVAL` | Fetch interval (seconds) | 60 |
 | `H3_RESOLUTIONS` | H3 resolution levels | [9, 8, 7, 6] |
-| `KAFKA_BOOTSTRAP_SERVERS` | Kafka broker address | localhost:19092 |
+| `KAFKA_BOOTSTRAP_SERVERS` | Kafka broker address | redpanda:9092 (Docker) |
 | `DUCKDB_PATH` | DuckDB file path | data/mobility.duckdb |
 | `WINDOW_SIZE_MINUTES` | Aggregation window | 5 |
 | `RETENTION_MINUTES` | Data retention period | 60 |
@@ -267,31 +265,51 @@ Health check for all services.
 ## 🧪 Testing
 
 ```bash
-# Install dev dependencies
-pip install pytest pytest-asyncio
+# Test API endpoints using curl
+curl http://localhost:8000/api/health
+curl http://localhost:8000/api/heatmap/geojson?resolution=8
 
-# Run tests (to be added)
-pytest tests/
+# Or use the test script
+./test_api.sh
 ```
 
 ## 🐛 Troubleshooting
 
+### Docker Issues
+
+**Services fail to start:**
+```bash
+# Check logs
+docker-compose logs
+
+# Reset everything
+docker-compose down -v
+docker-compose up -d --build
+```
+
+**Port conflicts:**
+- Ports 3000, 8000, 8080, 19092 must be available
+- Change ports in docker-compose.yml if needed
+
 ### Producer not fetching data
 - Check GBFS_URL is accessible: `curl $GBFS_URL`
 - Verify Redpanda is running: `docker ps`
+- Check logs: `docker-compose logs producer`
 
 ### Consumer not processing messages
 - Check Kafka topic exists: `docker exec -it scootermap-redpanda rpk topic list`
 - View consumer group status: `docker exec -it scootermap-redpanda rpk group list`
+- Check logs: `docker-compose logs consumer`
 
 ### API returns empty heatmap
 - Wait 60 seconds for first data fetch
-- Check if consumer is running
+- Check if producer and consumer are running: `docker-compose ps`
 - Verify DuckDB has data: `ls -lh data/mobility.duckdb`
 
 ### DuckDB errors
 - Ensure only ONE process writes to DuckDB
 - Check file permissions on `data/` directory
+- The `data/` directory is shared via volume mount
 
 ## 📈 Performance Characteristics
 
@@ -303,13 +321,13 @@ pytest tests/
 ## 🔜 Future Enhancements
 
 - [✅] Real-time alarm system for scooter shortage
+- [✅] Dockerization with Docker Compose
 - [ ] Landscape-based aggregation
 - [ ] Redis caching layer
 - [ ] WebSocket support for real-time updates
 - [ ] Historical data analysis
 - [ ] Multiple GBFS feed support
-- [ ] Dockerization of Python services
-- [ ] Cloud deployment
+- [ ] Cloud deployment (AWS/GCP)
 
 ## 📝 Data Sources
 

@@ -29,7 +29,7 @@ echo ""
 echo ""
 
 echo "5. Testing different resolutions..."
-for res in 4 5 6 7; do
+for res in 6 7 8 9; do
     echo "   Resolution $res:"
     curl -s "$BASE_URL/api/heatmap?resolution=$res" | jq '.hexagon_count' || echo "   ❌ Failed"
 done
