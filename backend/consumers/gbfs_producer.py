@@ -101,7 +101,7 @@ class GBFSProducer:
             self.producer.close()
             print("✅ Producer closed")
 
-
+# To run the producer directly in terminal for testing purposes
 if __name__ == "__main__":
     producer = GBFSProducer()
     producer.run()

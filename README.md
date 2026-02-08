@@ -60,7 +60,6 @@ This project demonstrates an ETL data pipeline that:
 .
 ├── docker-compose.yml          # Multi-service orchestration
 ├── .env.example                # Environment variables template
-├── setup.sh                    # Setup helper
 ├── test_api.sh                 # Simple API test script
 ├── download_urls.txt           # GBFS URLs
 ├── data/

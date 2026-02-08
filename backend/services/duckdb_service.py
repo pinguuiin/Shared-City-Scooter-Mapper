@@ -20,6 +20,7 @@ class DuckDBService:
     def __new__(cls, *args, **kwargs):
         if cls._instance is None:
             with cls._lock:
+                # Double-check locking to ensure only one instance can be created
                 if cls._instance is None:
                     cls._instance = super().__new__(cls)
                     cls._instance._initialized = False
