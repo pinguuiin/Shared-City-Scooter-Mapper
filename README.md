@@ -2,7 +2,7 @@
 
 ![alertmap](https://github.com/user-attachments/assets/331085a5-ebd9-4de9-815c-b52728b422c5)
 
-<br>A brief note on AI assistance: This project was developed by the author with assistance from AI agents as a learning exercise to explore stream processing, web development, and deploying FastAPI services. The author retains full responsibility for the design, implementation, and final code.
+<br>A brief note on AI assistance: This project was developed by the author with assistance from AI agents as a learning exercise to explore stream processing, web development, and deploying FastAPI services. The author retains full responsibility for the final code.
 
 A real-time scooter availability heatmap server combining Kafka-based streaming architecture patterns, batch processed messages, H3 multi-resolution aggregation with embedded DuckDB analytics, a FastAPI backend, and an interactive map frontend with live alert log for urban mobility monitoring and operational insights.
 
@@ -52,52 +52,6 @@ This project demonstrates an ETL data pipeline that:
 ┌─────────────┐
 │  Frontend   │ (React + Deck.gl + Nginx)
 └─────────────┘
-```
-
-## 📁 Project Structure
-
-```
-.
-├── docker-compose.yml          # Multi-service orchestration
-├── .env.example                # Environment variables template
-├── test_api.sh                 # Simple API test script
-├── download_urls.txt           # GBFS URLs
-├── data/
-│   └── mobility.duckdb         # DuckDB database (shared volume)
-├── backend/
-│   ├── Dockerfile              # Backend container image
-│   ├── .dockerignore           # Docker build exclusions
-│   ├── requirements.txt        # Python dependencies
-│   ├── config.py               # Configuration management
-│   ├── main.py                 # FastAPI application
-│   ├── run_producer.py         # Producer entry point
-│   ├── run_consumer.py         # Consumer entry point
-│   ├── api/
-│   │   ├── __init__.py
-│   │   ├── heatmap.py          # Heatmap endpoints
-│   │   └── health.py           # Health check endpoints
-│   ├── consumers/
-│   │   ├── __init__.py
-│   │   ├── gbfs_producer.py    # GBFS data fetcher
-│   │   ├── gbfs_consumer.py    # Kafka consumer
-│   │   └── aggregation_worker.py # H3 aggregation logic
-│   ├── services/
-│   │   ├── __init__.py
-│   │   ├── duckdb_service.py   # Database service
-│   │   └── h3_service.py       # H3 spatial indexing
-│   └── models/
-│       ├── __init__.py
-│       └── schemas.py          # Pydantic models
-└── frontend/
-    ├── Dockerfile              # Frontend container image
-    ├── .dockerignore           # Docker build exclusions
-    ├── nginx.conf              # Nginx configuration
-    ├── package.json            # Node dependencies
-    ├── vite.config.js          # Vite configuration
-    └── src/
-        ├── App.jsx             # Main React component
-        ├── components/         # React components
-        └── services/           # API client
 ```
 
 ## 🚀 Quick Start
