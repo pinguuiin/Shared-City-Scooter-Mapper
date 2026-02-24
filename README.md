@@ -286,8 +286,8 @@ docker-compose up -d --build
 
 This project uses GBFS (General Bikeshare Feed Specification) data:
 - **Default**: Dott Scooters Aachen
-- **Format**: https://gbfs.org/
-- **Other cities**: https://github.com/MobilityData/gbfs
+- **Data source**: https://gbfs.api.ridedott.com/public/v2/aachen/gbfs.json
+- **Other cities**: https://github.com/MobilityData/gbfs/blob/master/systems.csv
 
 ## 🙏 Acknowledgments
 
