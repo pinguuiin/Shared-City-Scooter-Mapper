@@ -12,7 +12,7 @@ This project demonstrates an ETL data pipeline that:
 - **Ingests** scooter location data from GBFS feeds every 60 seconds
 - **Processes** geographic coordinates using Uber's H3 hexagonal spatial indexing
 - **Aggregates** vehicle density across multiple resolution levels (resolutions 6-9, representing ~3km to ~174m)
-- **Serves** heatmap data via FastAPI with 50-200ms query latency
+- **Serves** heatmap data via FastAPI with 20-100ms API request latency
 - **Visualizes** density patterns with live alerm system through a React frontend using deck.gl and MapLibre GL
 
 ## 🏗️ Architecture
@@ -266,7 +266,7 @@ docker-compose up -d --build
 
 ## 📈 Performance Characteristics
 
-- **Latency**: ~50-200ms for heatmap queries
+- **Latency**: ~20-100ms for API requests
 - **Throughput**: ~1000 vehicles/second processing
 - **Memory**: ~200MB for API + Consumer
 - **Storage**: ~10MB per hour of data
